@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+
+    environment{
+        PROJECT_DIR = 'Student-management-application'
+    }
+    stages{
+        stage('Cloning Git repositories'){
+            steps{
+                withCredentials([usernamePassword(
+                    credentialsId: 'GIT_CRED',
+                    usernameVariable: 'GIT_USERNAME',
+                    passwordVariable: 'GIT_PASSWORD'
+                )]){
+                    sh '''
+                        rm -rf $PROJECT_DIR
+                        mkdir -p $PROJECT_DIR
+                        cd $PROJECT_DIR
+
+                        git clone https://github.com/priyanshusaineni/Student_management_application_backend.git
+                        git clone https://github.com/priyanshusaineni/Student_management_application_frontend.git
+
+                    '''
+
+                }
+            }
+        }
+
+        stage('Build Docker images'){
+            steps{
+                script{
+                    sh '''
+                        cd $PROJECT_DIR
+
+                        sudo docker network create app_network || true
+
+                        sudo docker build -t $DOCKERHUB_USERNAME/frontend ./frontend
+                        sudo docker build -t $DOCKERHUB_USERNAME/backend ./backend 
+                    '''
+                }
+            }
+        }
+
+        stage('Pushing Images to Docker hub'){
+            steps{
+                script{
+                    withCredentials([usernamePassword(
+                        credentialsId: 'DOCKERHUB_CRED',
+                        usernameVariable: 'DOCKERHUB_USR'
+                        passwordVariable: 'DOCKERHUB_PASSWD'
+                    )]){
+                        sh '''
+                            echo "$DOCKERHUB_PASSWD" | sudo docker login -u "$DOCKERHUB_USR" --password-stdin 
+
+                            sudo docker push $DOCKERHUB_USERNAME/frontend
+                            sudo docker push $DOCKERHUB_USERNAME/backend
+
+                        '''
+                    }
+                    
+                }
+            }
+        }
+
+        
+    }
+}
