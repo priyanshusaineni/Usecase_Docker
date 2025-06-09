@@ -34,8 +34,8 @@ pipeline {
 
                         sudo docker network create app_network || true
 
-                        sudo docker build -t $DOCKERHUB_USERNAME/frontend ./frontend
-                        sudo docker build -t $DOCKERHUB_USERNAME/backend ./backend 
+                        sudo docker build -t $DOCKERHUB_USERNAME/frontend ./Student_management_application_frontend
+                        sudo docker build -t $DOCKERHUB_USERNAME/backend ./Student_management_application_backend
                     '''
                 }
             }
@@ -46,7 +46,7 @@ pipeline {
                 script{
                     withCredentials([usernamePassword(
                         credentialsId: 'DOCKERHUB_CRED',
-                        usernameVariable: 'DOCKERHUB_USR'
+                        usernameVariable: 'DOCKERHUB_USR',
                         passwordVariable: 'DOCKERHUB_PASSWD'
                     )]){
                         sh '''
@@ -62,6 +62,32 @@ pipeline {
             }
         }
 
-        
+        stage('Deploy to EC2 (smaller instance)') {
+            steps {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'ec2-smaller-instance',
+                    keyFileVariable: 'KEY_FILE',
+                    usernameVariable: 'INSTANCE_USER'
+                )]) {
+                    script {
+                        sh '''
+                            ssh -o StrictHostKeyChecking=no -i $KEY_FILE $INSTANCE_USER@$IP_ADDRESS "mkdir -p ~/Student-management-application/Student_management_application_frontend"
+                        
+                            scp -o StrictHostKeyChecking=no -i $KEY_FILE \
+                            Student-management-application/Student_management_application_frontend/docker-compose.yml \
+                            $INSTANCE_USER@$IP_ADDRESS:~/Student-management-application/Student_management_application_frontend/
+                    
+                            ssh -o StrictHostKeyChecking=no -i $KEY_FILE $INSTANCE_USER@$IP_ADDRESS " \
+                                cd ~/Student-management-application/Student_management_application_frontend && \
+                                docker pull $DOCKERHUB_USERNAME/frontend && \
+                                docker pull $DOCKERHUB_USERNAME/backend && \
+                                docker-compose down || true && \
+                                docker-compose up -d --build \
+                            "
+                        '''
+                    }
+                }
+            }
+        }
     }
 }
