@@ -17,9 +17,17 @@ pipeline {
                             rm -rf $PROJECT_DIR
                             mkdir -p $PROJECT_DIR
                             cd $PROJECT_DIR
-                            echo "$REPO_NAME"
-                            git clone https://github.com/priyanshusaineni/Student_management_application_backend.git
-                            git clone https://github.com/priyanshusaineni/Student_management_application_frontend.git
+                            echo "Triggered Repo is: $REPO_NAME"
+                            
+                            if [ "$REPO_NAME" = "Student_management_application_backend" ]; then
+                                echo "Cloning backend repo..."
+                                git clone https://github.com/priyanshusaineni/Student_management_application_backend.git
+                            elif [ "$REPO_NAME" = "Student_management_application_frontend" ]; then
+                                echo "Cloning frontend repo..."
+                                git clone https://github.com/priyanshusaineni/Student_management_application_frontend.git
+                            else
+                                echo "No matching repository to clone."
+                            fi
                         '''
                     }
                 }
