@@ -7,22 +7,23 @@ pipeline {
     stages{
         stage('Cloning Git repositories'){
             steps{
-                withCredentials([usernamePassword(
-                    credentialsId: 'GIT_CRED',
-                    usernameVariable: 'GIT_USERNAME',
-                    passwordVariable: 'GIT_PASSWORD'
-                )]){
-                    sh '''
-                        rm -rf $PROJECT_DIR
-                        mkdir -p $PROJECT_DIR
-                        cd $PROJECT_DIR
-
-                        git clone https://github.com/priyanshusaineni/Student_management_application_backend.git
-                        git clone https://github.com/priyanshusaineni/Student_management_application_frontend.git
-
-                    '''
-
+                script{
+                    withCredentials([usernamePassword(
+                        credentialsId: 'GIT_CRED',
+                        usernameVariable: 'GIT_USERNAME',
+                        passwordVariable: 'GIT_PASSWORD'
+                    )]){
+                        sh '''
+                            rm -rf $PROJECT_DIR
+                            mkdir -p $PROJECT_DIR
+                            cd $PROJECT_DIR
+                            echo "--------------------------$REPO_NAME----------------------------------------"
+                            git clone https://github.com/priyanshusaineni/Student_management_application_backend.git
+                            git clone https://github.com/priyanshusaineni/Student_management_application_frontend.git
+                        '''
+                    }
                 }
+                
             }
         }
 
