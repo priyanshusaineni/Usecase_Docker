@@ -17,7 +17,7 @@ pipeline {
                             rm -rf $PROJECT_DIR
                             mkdir -p $PROJECT_DIR
                             cd $PROJECT_DIR
-                            echo "--------------------------$REPO_NAME----------------------------------------"
+                            echo "$REPO_NAME"
                             git clone https://github.com/priyanshusaineni/Student_management_application_backend.git
                             git clone https://github.com/priyanshusaineni/Student_management_application_frontend.git
                         '''
