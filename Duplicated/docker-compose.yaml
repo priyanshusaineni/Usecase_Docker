@@ -1,0 +1,45 @@
+version: '3.8'
+
+networks:
+  app_network:
+    name: app_network
+
+services:
+  mongodb:
+    image: mongo
+    container_name: student_db
+    volumes:
+      - ~/mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+      - VITE_BASE_URL=http://backend:3000/student
+    networks:
+      - app_network 
+
+  backend:
+    image: priyanshu0811/backend
+    #container_name: student-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=mongodb://mongodb:27017/
+    depends_on:
+      - mongodb
+    networks:
+      - app_network
+  frontend:
+    image: priyanshu0811/frontend
+
+    #container_name: student-frontend
+    environment:
+      - BUILD_URL_ENV=http://13.233.70.184:3000/student
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+volumes:
+  mongodb_data:
