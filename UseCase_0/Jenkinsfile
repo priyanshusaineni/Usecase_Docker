@@ -46,8 +46,15 @@ pipeline {
 
                         sudo docker network create app_network || true
 
-                        sudo docker build -t $DOCKERHUB_USERNAME/frontend ./Student_management_application_frontend
-                        sudo docker build -t $DOCKERHUB_USERNAME/backend ./Student_management_application_backend
+                        if [ "$REPO_NAME" = "Student_management_application_backend" ]; then
+                            echo "Building only Backend image ..."       
+                            sudo docker build -t $DOCKERHUB_USERNAME/backend ./Student_management_application_backend
+                        elif [ "$REPO_NAME" = "Student_management_application_frontend" ]; then
+                            echo "Building only frontend image ..."
+                            sudo docker build -t $DOCKERHUB_USERNAME/frontend ./Student_management_application_frontend
+                        else
+                            echo "There are no updates in the repository..."
+                        fi
                     '''
                 }
             }
@@ -64,9 +71,15 @@ pipeline {
                         sh '''
                             echo "$DOCKERHUB_PASSWD" | sudo docker login -u "$DOCKERHUB_USR" --password-stdin 
 
-                            sudo docker push $DOCKERHUB_USERNAME/frontend
-                            sudo docker push $DOCKERHUB_USERNAME/backend
-
+                            if [ "$REPO_NAME" = "Student_management_application_backend" ]; then
+                                echo "Pushing only Backend image ..."  
+                                sudo docker push $DOCKERHUB_USERNAME/backend 
+                            elif [ "$REPO_NAME" = "Student_management_application_frontend" ]; then
+                                echo "Pushing only frontend image ..."
+                                sudo docker push $DOCKERHUB_USERNAME/frontend
+                            else
+                                echo "There are no updates in the repository..."
+                            fi
                         '''
                     }
                     
@@ -91,8 +104,6 @@ pipeline {
                     
                             ssh -o StrictHostKeyChecking=no -i $KEY_FILE $INSTANCE_USER@$IP_ADDRESS " \
                                 cd ~/Student-management-application/Student_management_application_frontend && \
-                                docker pull $DOCKERHUB_USERNAME/frontend && \
-                                docker pull $DOCKERHUB_USERNAME/backend && \
                                 docker-compose down || true && \
                                 docker-compose up -d --build \
                             "
