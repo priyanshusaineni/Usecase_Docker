@@ -60,7 +60,7 @@ pipeline {
         stage('Pushing Images to Docker hub'){
             steps{
                 script{
-                    // withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
                         sh """
                             aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 600802700666.dkr.ecr.ap-south-1.amazonaws.com
 
@@ -74,7 +74,7 @@ pipeline {
                             echo "There are no updates in the repository..."
                         fi
                         """
-                    // }
+                    }
                     
                 }
             }
